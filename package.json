@@ -1,0 +1,10 @@
+{
+	"name":"universal-messenger",
+	"description":"The universal messenger service",
+	"version":"1.0.1",
+	"true":true,
+	"dependencies":{
+		"mysql":"latest",
+		"node-uuid":"latest"
+	}
+}
