@@ -1,7 +1,7 @@
 var Net = require("net");
 var Mysql = require("mysql");
 var UniversalMessengerTransmitter = require("./classes/UniversalMessengerTransmitter.js");
-var HOST = "localhost";
+var HOST = "0.0.0.0";
 var PORT = 1337;
 //var universalMessengerServer = new UniversalMessengerServer();
 var UUID = require("node-uuid");
