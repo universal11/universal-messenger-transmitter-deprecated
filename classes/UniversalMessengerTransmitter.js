@@ -47,7 +47,9 @@ UniversalMessengerTransmitter.prototype.getIpAddressData = function(socket){
 
 UniversalMessengerTransmitter.prototype.sendMail = function(data){
 	var Net = require("net");
-
+	if(data.local_address === undefined){
+		data.local_address = "0.0.0.0";
+	}
 	var Client = Net.createConnection({port: 25, host: data.recipient_host, localAddress: data.local_address}, function(){
 		console.log(Client);
 		console.log("Sending Message: ");
