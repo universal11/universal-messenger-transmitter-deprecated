@@ -1,6 +1,6 @@
 var Net = require("net");
 var Mysql = require("mysql");
-var UniversalMessengerServer = require("./classes/UniversalMessengerServer.js");
+var UniversalMessengerTransmitter = require("./classes/UniversalMessengerTransmitter.js");
 var HOST = "localhost";
 var PORT = 1337;
 //var universalMessengerServer = new UniversalMessengerServer();
@@ -17,10 +17,12 @@ var dbConnection = Mysql.createConnection({
 	
 
 var Server = Net.createServer(function(socket){
-	socket.UniversalMessengerServer = {
+	socket.UniversalMessengerTransmitter = {
 		is_authenticated:false,
-		client_id: UUID.v1(),
+		connection_id: UUID.v1(),
 	};
+
+	var universalMessengerTransmitter = new UniversalMessengerTransmitter();
 
 	socket.write("Connected to " + socket.localAddress + ":" + socket.localPort + "\r\n");
 	socket.write("From " + socket.remoteAddress + ":" + socket.remotePort + "\r\n");
@@ -37,13 +39,36 @@ var Server = Net.createServer(function(socket){
 				console.log("Parse error: " + exception);
 				return 0;
 			}
-			console.log("Request: " + UniversalMessengerServer.getActionNameById(data.action) + dataAsJsonString);
+			console.log("Request: " + UniversalMessengerTransmitter.getActionNameById(data.action) + dataAsJsonString);
 			switch(data.action){
-				case UniversalMessengerServer.ACTIONS.QUIT:
+				case UniversalMessengerTransmitter.ACTIONS.QUIT:
 					socket.end(); 
 					break;
-				case UniversalMessengerServer.ACTIONS.SEND_MAIL:
-					UniversalMessengerServer.sendMail(data, dbConnection); 
+				case UniversalMessengerTransmitter.ACTIONS.SEND_MAIL:
+					if(!socket.UniversalMessengerTransmitter.is_authenticated){
+						socket.end();
+						return 0;
+					}
+					universalMessengerTransmitter.sendMail(data, dbConnection); 
+					break;
+				case UniversalMessengerTransmitter.ACTIONS.AUTHENTICATE:
+					if(!socket.UniversalMessengerTransmitter.is_authenticated){
+						universalMessengerTransmitter.authenticate(data, dbConnection, socket);
+					}
+					break;
+				case UniversalMessengerTransmitter.ACTIONS.GET_IP_ADDRESS_DATA:
+					if(!socket.UniversalMessengerTransmitter.is_authenticated){
+						socket.end();
+						return 0;
+					}
+					universalMessengerTransmitter.getIpAddressData(socket);
+					break;
+				case UniversalMessengerTransmitter.ACTIONS.PROCESS_HTML_TO_IMAGE:
+					if(!socket.UniversalMessengerTransmitter.is_authenticated){
+						socket.end();
+						return 0;
+					}
+					universalMessengerTransmitter.processHTMLtoImage(data, dbConnection, socket); 
 					break;
 				default:
 					break;
@@ -54,7 +79,7 @@ var Server = Net.createServer(function(socket){
 
 	socket.on("end", function(){
 		console.log("Client disconnected!");
-		mfServer.removeSocket(socket.UniversalMessengerServer.client_id);
+		universalMessengerTransmitter.removeConnection(socket.UniversalMessengerTransmitter.connection_id);
 	});
 
 }).listen(PORT, HOST);
