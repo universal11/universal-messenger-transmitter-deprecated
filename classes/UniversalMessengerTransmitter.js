@@ -64,8 +64,9 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
 	}
 
-	var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nto: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nfrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nsubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: base64\r\n\r\n";
-
+	var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\n";
+	smtp_session += "Content-Type: text/html; charset=\"utf-8\"\r\n\r\n";
+	//smtp_session += "Content-Transfer-Encoding: base64\r\n\r\n";
 
 	Process("java -jar ./html-to-image-map/html-to-image-map.jar -d '" + data.base64_image_html + "' -o '" + socket.UniversalMessengerTransmitter.connection_id + "'", function(error, output){
 		if(error){
@@ -74,8 +75,15 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 			return 0;
 		}
 		output = JSON.parse(output);
-
+		//.replace("src=\"./processed", data.image_host + "/images/")
+		output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+		output.html_data = output.html_data.replace("src=\"./processed", "http://" + data.image_host + "/images");
+		//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
+		output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
+		output.html_data = output.html_data.replace("</body>\n</html>", "");
+		//output.html_data = new Buffer(output.html_data).toString('base64');
 		smtp_session += output.html_data + "\r\n.\r\n";
+		
 
 		UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
 

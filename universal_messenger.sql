@@ -106,6 +106,7 @@ CREATE TABLE `smtp_relay_accounts` (
   `password` varchar(255) DEFAULT NULL,
   `last_connection_id` varchar(255) DEFAULT NULL,
   `assigned_transmitter_id` int(11) DEFAULT NULL,
+  `friendly_from` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`smtp_relay_account_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -116,7 +117,7 @@ CREATE TABLE `smtp_relay_accounts` (
 
 LOCK TABLES `smtp_relay_accounts` WRITE;
 /*!40000 ALTER TABLE `smtp_relay_accounts` DISABLE KEYS */;
-INSERT INTO `smtp_relay_accounts` VALUES (1,'quantumxyzmail@mail.com','Batman11!','af75ca30-f9a1-11e3-a5d5-9bbd22641e16',NULL);
+INSERT INTO `smtp_relay_accounts` VALUES (1,'quantumxyzmail@mail.com','Batman11!','b5416de0-fe36-11e3-8081-75a43077f926',NULL,NULL);
 /*!40000 ALTER TABLE `smtp_relay_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,4 +157,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-06-21 17:31:52
+-- Dump completed on 2014-06-27 13:09:22
