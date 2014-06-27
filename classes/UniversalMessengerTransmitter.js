@@ -77,7 +77,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		output = JSON.parse(output);
 		//.replace("src=\"./processed", data.image_host + "/images/")
 		output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-		output.html_data = output.html_data.replace("src=\"./processed", "http://" + data.image_host + "/images");
+		output.html_data = output.html_data.replace("src=\"./processed", "src=\"http://" + data.image_host + "/images");
 		//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
 		output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
 		output.html_data = output.html_data.replace("</body>\n</html>", "");
