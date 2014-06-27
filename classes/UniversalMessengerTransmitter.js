@@ -64,7 +64,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
 	}
 
-	var smtp_session = "EHLO batman.com\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nfrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nsubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/plain; charset=\"utf-8\"\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+	var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nto: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nfrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nsubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: base64\r\n\r\n";
 
 
 	Process("java -jar ./html-to-image-map/html-to-image-map.jar -d '" + data.base64_image_html + "' -o '" + socket.UniversalMessengerTransmitter.connection_id + "'", function(error, output){
@@ -80,7 +80,6 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
 
 		var Client = Net.createConnection({port: 25, host: data.recipient_host, localAddress: data.local_address}, function(){
-			console.log(Client);
 			console.log("Sending Message: ");
 			console.log(smtp_session);
 			Client.write(smtp_session);
@@ -125,7 +124,8 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename){
 	  pass: "batman11!" // defaults to "@anonymous"
 	});
 
-	FTP.put(filepath, 'generated/' + filename, function(error) {
+
+	FTP.put(filepath, '/generated/' + filename, function(error) {
 		if (error){
 	  		console.log(error);
 	  		throw error;
@@ -138,7 +138,7 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename){
 				throw error;
 				return 0;
 			}
-			console.log("Local image removed!");
+			//console.log("Local image removed!");
 		});
 
 	});
