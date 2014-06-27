@@ -1,0 +1,26 @@
+
+
+{	"action": 0	}
+
+{	"action": 3	}
+
+
+{	"action": 2, "name" : "universal", "password":"test123"	}
+
+{"action": 1, "local_address":"0.0.0.0", "recipient_host":"smtp.mail.com", "friendly_from":"John Smith", "smtp_relay_account_name": "quantumxyzmail@mail.com", "smtp_relay_account_password":"Batman11!", "image_host":"theuniversalframework.com", "subject":"this is a second test subject", "base64_image_html":"PGNlbnRlcj48YSBocmVmPSJodHRwOi8vZ29vZ2xlLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL2Nkbi5ldGVrbml4LmNvbS93cC1jb250ZW50L3VwbG9hZHMvMjAxNC8wNS9nb29nbGUtbG9nby10cmFuc3BhcmVudC02OTMyOC5wbmciLz48L2E+PGJyPjxhIGhyZWY9Imh0dHA6Ly9iaW5nLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL3JhY2suMi5tc2hjZG4uY29tL21lZGlhL1pna3lNREV6THpBNUx6RTJMekl4TDI5c1pHeHZaMjh1WVRWaE1UUXVhbkJuQ25BSmRHaDFiV0lKTVRJd01IZzVOakF3UGcvNDIyN2FhNDcvZGNmL29sZC1sb2dvLmpwZyIvPjwvYT48L2NlbnRlcj4=", "recipients":["darks1de11@hotmail.com", "omegasniper@hotmail.com"]}
+
+
+cXVhbnR1bXh5em1haWxAbWFpbC5jb20=
+
+QmF0bWFuMTEh
+
+
+'<center><a href="http://google.com"><img border="0" src="http://cdn.eteknix.com/wp-content/uploads/2014/05/google-logo-transparent-69328.png"/></a><br><a href="http://bing.com"><img border="0" src="http://rack.2.mshcdn.com/media/ZgkyMDEzLzA5LzE2LzIxL29sZGxvZ28uYTVhMTQuanBnCnAJdGh1bWIJMTIwMHg5NjAwPg/4227aa47/dcf/old-logo.jpg"/></a></center>'
+
+'PGNlbnRlcj48YSBocmVmPSJodHRwOi8vZ29vZ2xlLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL2Nkbi5ldGVrbml4LmNvbS93cC1jb250ZW50L3VwbG9hZHMvMjAxNC8wNS9nb29nbGUtbG9nby10cmFuc3BhcmVudC02OTMyOC5wbmciLz48L2E+PGJyPjxhIGhyZWY9Imh0dHA6Ly9iaW5nLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL3JhY2suMi5tc2hjZG4uY29tL21lZGlhL1pna3lNREV6THpBNUx6RTJMekl4TDI5c1pHeHZaMjh1WVRWaE1UUXVhbkJuQ25BSmRHaDFiV0lKTVRJd01IZzVOakF3UGcvNDIyN2FhNDcvZGNmL29sZC1sb2dvLmpwZyIvPjwvYT48L2NlbnRlcj4='
+
+'<div style="width: 600px; height: 300px; border 3px solid black; background: url('http://sites.duke.edu/tlge_cmk30/files/2010/12/Google-Logo.jpg');"><b>Hello World!</b> Please goto <a title="Go to Google" href="http://www.google.com">Google</a>.</div>'
+
+java -jar html-to-image-map.jar -d 'PGNlbnRlcj48YSBocmVmPSJodHRwOi8vZ29vZ2xlLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL2Nkbi5ldGVrbml4LmNvbS93cC1jb250ZW50L3VwbG9hZHMvMjAxNC8wNS9nb29nbGUtbG9nby10cmFuc3BhcmVudC02OTMyOC5wbmciLz48L2E+PGJyPjxhIGhyZWY9Imh0dHA6Ly9iaW5nLmNvbSI+PGltZyBib3JkZXI9IjAiIHNyYz0iaHR0cDovL3JhY2suMi5tc2hjZG4uY29tL21lZGlhL1pna3lNREV6THpBNUx6RTJMekl4TDI5c1pHeHZaMjh1WVRWaE1UUXVhbkJuQ25BSmRHaDFiV0lKTVRJd01IZzVOakF3UGcvNDIyN2FhNDcvZGNmL29sZC1sb2dvLmpwZyIvPjwvYT48L2NlbnRlcj4='
+
+sudo ip addr add 23.236.155.187 dev em2

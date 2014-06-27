@@ -5,6 +5,7 @@
 	"true":true,
 	"dependencies":{
 		"mysql":"latest",
-		"node-uuid":"latest"
+		"node-uuid":"latest",
+		"jsftp":"latest"
 	}
 }
