@@ -79,7 +79,7 @@ var Server = Net.createServer(function(socket){
 
 	socket.on("end", function(){
 		console.log("Client disconnected!");
-		universalMessengerTransmitter.removeConnection(socket.UniversalMessengerTransmitter.connection_id);
+		//universalMessengerTransmitter.removeConnection(socket.UniversalMessengerTransmitter.connection_id);
 	});
 
 }).listen(PORT, HOST);

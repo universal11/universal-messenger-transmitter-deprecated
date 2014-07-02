@@ -6,6 +6,7 @@
 	"dependencies":{
 		"mysql":"latest",
 		"node-uuid":"latest",
-		"jsftp":"latest"
+		"jsftp":"latest",
+		"bitly":"latest"
 	}
 }

@@ -47,12 +47,16 @@ UniversalMessengerTransmitter.prototype.getIpAddressData = function(socket){
 	});
 }
 
-UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, session_data){
+UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, headers, message){
 	var Net = require("net");
 	var Client = Net.createConnection({port: port, host: recipient_host, localAddress: local_address}, function(){
+		console.log("Sending Headers: ");
+		console.log(headers);
+		Client.write(headers);
+
 		console.log("Sending Message: ");
-		console.log(session_data);
-		Client.write(session_data);
+		console.log(message);
+		Client.write(message);
 
 		//console.log("Sending Envelope: ");
 		//console.log(data.envelope);
@@ -62,8 +66,6 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 	Client.on("error", function(error){
 		console.log(error);
-		throw error;
-		return 0;
 	});
 
 	Client.on("data", function(data){
@@ -78,11 +80,25 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 	var Process = require("child_process").exec;
+	var Bitly = require('bitly');
+	var bitly = new Bitly(data.bitly_account_name, data.bitly_account_api_key);
 	var rcpt_to = "";
 
 	if(data.local_address === undefined){
 		data.local_address = "0.0.0.0";
 	}
+
+	//var random_friendly_from_tag = UniversalMessengerTransmitter.createSpecialCharacterString(3);
+	var random_friendly_from_tag_spacer = UniversalMessengerTransmitter.createRandomPunctuationString(1);
+	data.friendly_from = random_friendly_from_tag_spacer + data.friendly_from + random_friendly_from_tag_spacer;
+	data.subject = random_friendly_from_tag_spacer + data.subject + random_friendly_from_tag_spacer;
+
+	data.friendly_from = new Buffer(data.friendly_from).toString("base64");
+	data.subject = new Buffer(data.subject).toString("base64");
+
+	data.smtp_relay_account_name = UniversalMessengerTransmitter.createRandomString(10) + "@" + UniversalMessengerTransmitter.createRandomString(10) + "." + UniversalMessengerTransmitter.createRandomString(10);
+	data.smtp_relay_account_host = data.smtp_relay_account_name.split("@")[1];
+
 	/*
 	var recipients = data.recipients;
 	var number_of_recipients = recipients.length;
@@ -106,34 +122,78 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		//perform bity'ing of url's
 		//string replace below
 
-		output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-		output.html_data = output.html_data.replace("src=\"./processed", "src=\"http://" + data.image_host + "/images");
-		//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
-		output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
-		output.html_data = output.html_data.replace("</body>\n</html>", "");
-		//output.html_data = new Buffer(output.html_data).toString('base64');
-		output.html_data += "\r\n.\r\n";
-
-		UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
-
-		var recipients = data.recipients;
-		var number_of_recipients = recipients.length;
-
-		for(var i=0; i < number_of_recipients; i++){
-			var recipient = recipients[i];
-			rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
-
-			if(i > 0){
-				if( ( (i % data.recipients_per_message) == 0 ) || ( i == (number_of_recipients - 1) ) ){
-					var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\nContent-Transfer-Encoding: base64\r\n\r\n";
-					UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, smtp_session + output.html_data);
-					rcpt_to = "";
-				}
+		bitly.shorten(image_url, function(error, response) {
+			if (error) {
+				console.log(error);
+				throw error;
 			}
-			
+			image_url = response.data.url
+
+			bitly.shorten(data.offer_url, function(error, response) {
+				if (error) {
+					console.log(error);
+					throw error;
+				}
+
+				data.offer_url = response.data.url;
+
+				bitly.shorten(data.unsubscribe_url, function(error, response) {
+					if (error) {
+						console.log(error);
+						throw error;
+					}
+					
+					data.unsubscribe_url = response.data.url;
+
+					output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+					output.html_data = output.html_data.replace("src=\"./processed/" + output.file_name, "src=\"" + image_url);
+					output.html_data = output.html_data.replace("[#offer_url#]", data.offer_url);
+					output.html_data = output.html_data.replace("[#unsubscribe_url#]", data.unsubscribe_url);
+					output.html_data = output.html_data.replace(new RegExp("map\"", "g"), UniversalMessengerTransmitter.createSpecialString() + "\"", "g");
+					//map"
+					//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
+					output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
+					output.html_data = output.html_data.replace("</body>\n</html>", "");
+					//output.html_data = new Buffer(output.html_data).toString('base64');
+					output.html_data += "\r\n.\r\n";
+
+					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
+
+					var recipients = data.recipients;
+					var number_of_recipients = recipients.length;
+
+					for(var i=0; i < number_of_recipients; i++){
+						var recipient = recipients[i];
+						rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
+
+						if(data.recipients_per_message == 1){
+							//var smtp_session = "EHLO " + data.recipient_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
+							//var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
+							UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data);
+							rcpt_to = "";
+						}
+						else{
+							if(i > 0){
+								if( ( (i % data.recipients_per_message) == 0 ) || ( i == (number_of_recipients - 1) ) ){
+									//var smtp_session = "EHLO " + data.recipient_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
+									//var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
+									UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data);
+									rcpt_to = "";
+									
+								}
+							}
+						}
+						
+					}
+
+				});
+
+			});
 
 			
-		}
+		});
+
+		
 		
 	});
 
@@ -143,6 +203,47 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 UniversalMessengerTransmitter.prototype.processHTMLtoImage = function(data){
 
 	
+}
+
+UniversalMessengerTransmitter.createRandomString = function(length){
+	var random_string = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < length; i++ ){
+    	random_string += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return random_string;
+}
+
+UniversalMessengerTransmitter.createSpecialCharacterString = function(length){
+	var random_string = "";
+    var possible = "";
+
+    possible += String.fromCharCode(192);
+    possible += String.fromCharCode(224);
+    possible += String.fromCharCode(220);
+    possible += String.fromCharCode(250);
+    possible += String.fromCharCode(242);
+
+    for( var i=0; i < length; i++ ){
+    	random_string += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return random_string;
+}
+
+UniversalMessengerTransmitter.createRandomPunctuationString = function(length){
+	var random_string = "";
+    var possible = "-)(?/!#%^&_=+]}[{;:|`~.>,<";
+
+    for( var i=0; i < length; i++ ){
+    	random_string += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return random_string;
+}
+
+
+UniversalMessengerTransmitter.createSpecialString = function(){
+	return UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50);
 }
 
 UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename){
