@@ -47,8 +47,10 @@ UniversalMessengerTransmitter.prototype.getIpAddressData = function(socket){
 	});
 }
 
-UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, headers, message){
+UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, headers, message, connection, recipients){
 	var Net = require("net");
+	var response = "";
+
 	var Client = Net.createConnection({port: port, host: recipient_host, localAddress: local_address}, function(){
 		console.log("Sending Headers: ");
 		console.log(headers);
@@ -66,16 +68,65 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 	Client.on("error", function(error){
 		console.log(error);
+
 	});
 
 	Client.on("data", function(data){
 		console.log("Received:");
 		console.log(data.toString());
+
+		response += data.toString();
 	});
 
 	Client.on("end", function(){
 		console.log("Client disconnected!");
+		UniversalMessengerTransmitter.smtpResponseHandler(response, connection, recipients);
 	});
+}
+
+UniversalMessengerTransmitter.smtpResponseHandler = function(response, connection, recipients){
+	var response_lines = response.split("\r\n");
+	var number_of_response_lines = response_lines.length;
+	var last_response_code = -1;
+	var number_of_recipients = recipients.length;
+
+	var data = {
+		success: true,
+		recipient_responses:[]
+	};
+
+	for(var i=0; i < number_of_response_lines; i++){
+		var response_line = response_lines[i];
+		var response_code = parseInt(response_line.substr(0, 3));
+		if(!isNaN(response_code)){
+			if(response_code != 221){
+				last_response_code = parseInt(response_line.substr(0, 3));
+			}
+		}
+			
+	}
+
+	if(response_code < 354){
+		data.success = true;
+	}
+
+	for(var i=0; i < number_of_recipients; i++){
+		var recipient = recipients[i];
+		var recipient_response = {
+			is_valid: false,
+			recipient: recipient
+		};
+		for(var j=0; j < number_of_response_lines; j++){
+			var response_line = response_lines[j];
+			if(response_line.indexOf("250 " + recipient) > -1){
+				recipient_response.is_valid = true;
+				break;
+			}
+		}
+		data.recipient_responses.push(recipient_response);
+	}
+
+	connection.write(JSON.stringify(data) + "\r\n");
 }
 
 UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
@@ -161,25 +212,28 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 
 					var recipients = data.recipients;
 					var number_of_recipients = recipients.length;
+					var current_recipients = [];
 
 					for(var i=0; i < number_of_recipients; i++){
 						var recipient = recipients[i];
 						rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
+						current_recipients.push(recipient);
 
 						if(data.recipients_per_message == 1 || number_of_recipients == 1){
 							//var smtp_session = "EHLO " + data.recipient_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
 							//var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
-							UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data);
+							UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data, socket, current_recipients);
 							rcpt_to = "";
+							current_recipients = [];
 						}
 						else{
 							if(i > 0){
 								if( ( (i % data.recipients_per_message) == 0 ) || ( i == (number_of_recipients - 1) ) ){
 									//var smtp_session = "EHLO " + data.recipient_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
 									//var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
-									UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data);
+									UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data, socket, current_recipients);
 									rcpt_to = "";
-									
+									current_recipients = [];
 								}
 							}
 						}
@@ -204,6 +258,8 @@ UniversalMessengerTransmitter.prototype.processHTMLtoImage = function(data){
 
 	
 }
+
+
 
 UniversalMessengerTransmitter.createRandomString = function(length){
 	var random_string = "";
