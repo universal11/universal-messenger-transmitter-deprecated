@@ -96,7 +96,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 	data.friendly_from = new Buffer(data.friendly_from).toString("base64");
 	data.subject = new Buffer(data.subject).toString("base64");
 
-	data.smtp_relay_account_name = UniversalMessengerTransmitter.createRandomString(10) + "@" + UniversalMessengerTransmitter.createRandomString(10) + "." + UniversalMessengerTransmitter.createRandomString(10);
+	data.smtp_relay_account_name = UniversalMessengerTransmitter.createRandomString(10) + "@" + UniversalMessengerTransmitter.createRandomString(20) + ".com";
 	data.smtp_relay_account_host = data.smtp_relay_account_name.split("@")[1];
 
 	/*
@@ -155,7 +155,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 					output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
 					output.html_data = output.html_data.replace("</body>\n</html>", "");
 					//output.html_data = new Buffer(output.html_data).toString('base64');
-					output.html_data += "\r\n.\r\n";
+					output.html_data += "\r\n.\r\nquit\r\n";
 
 					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
 
@@ -166,7 +166,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 						var recipient = recipients[i];
 						rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
 
-						if(data.recipients_per_message == 1){
+						if(data.recipients_per_message == 1 || number_of_recipients == 1){
 							//var smtp_session = "EHLO " + data.recipient_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
 							//var smtp_session = "EHLO " + data.recipient_host + "\r\nAUTH LOGIN " + new Buffer(data.smtp_relay_account_name).toString("base64") + "\r\n" + new Buffer(data.smtp_relay_account_password).toString("base64") + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\nTo: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nFrom: \"" + data.friendly_from + "\" <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + new Buffer(data.subject).toString("base64") + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n";
 							UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, "EHLO " + data.smtp_relay_account_host + "\r\nMAIL FROM: <" + data.smtp_relay_account_name + ">\r\n" + rcpt_to + "DATA\r\n", "From: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nSubject: =?UTF-8?B?" + data.subject + "?=\r\nContent-Type: text/html; charset=\"utf-8\"\r\n\r\n" + output.html_data);
@@ -241,6 +241,33 @@ UniversalMessengerTransmitter.createRandomPunctuationString = function(length){
     return random_string;
 }
 
+UniversalMessengerTransmitter.getRandomWhiteListedDomain = function(){
+
+	var possible_domains = [
+		{
+			name:"yahoo.com",
+			smtp_server:"smtp.mail.yahoo.com"
+		},
+		{
+			name:"mail.com",
+			smtp_server:"smtp.mail.com"
+		},
+		{
+			name:"gmail.com",
+			smtp_server:"smtp.gmail.com"
+		},
+		{
+			name:"aol.com",
+			smtp_server:"smtp.aol.com"
+		},
+		{
+			name:"hotmail.com",
+			smtp_server:"smtp.live.com"
+		}
+	];
+
+    return possible_domains[(Math.floor(Math.random() * possible_domains.length))];
+}
 
 UniversalMessengerTransmitter.createSpecialString = function(){
 	return UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50);
