@@ -1,18 +1,20 @@
 var Net = require("net");
-var Mysql = require("mysql");
+//var Mysql = require("mysql");
 var UniversalMessengerTransmitter = require("./classes/UniversalMessengerTransmitter.js");
 var HOST = "0.0.0.0";
 var PORT = 1337;
 //var universalMessengerServer = new UniversalMessengerServer();
 var UUID = require("node-uuid");
 
-console.log("Connecting to DB...");
+//console.log("Connecting to DB...");
 
+/*
 var dbConnection = Mysql.createConnection({
 	host:"localhost",
 	user:"root",
 	password:""
 });
+*/
 
 	
 
@@ -53,7 +55,7 @@ var Server = Net.createServer(function(socket){
 					break;
 				case UniversalMessengerTransmitter.ACTIONS.AUTHENTICATE:
 					if(!socket.UniversalMessengerTransmitter.is_authenticated){
-						universalMessengerTransmitter.authenticate(data, dbConnection, socket);
+						universalMessengerTransmitter.authenticate(data, socket);
 					}
 					break;
 				case UniversalMessengerTransmitter.ACTIONS.GET_IP_ADDRESS_DATA:
@@ -68,7 +70,7 @@ var Server = Net.createServer(function(socket){
 						socket.end();
 						return 0;
 					}
-					universalMessengerTransmitter.processHTMLtoImage(data, dbConnection, socket); 
+					//universalMessengerTransmitter.processHTMLtoImage(data, dbConnection, socket); 
 					break;
 				default:
 					break;
