@@ -47,10 +47,12 @@ var Server = Net.createServer(function(socket){
 					socket.end(); 
 					break;
 				case UniversalMessengerTransmitter.ACTIONS.SEND_MAIL:
+					/*
 					if(!socket.UniversalMessengerTransmitter.is_authenticated){
 						socket.end();
 						return 0;
 					}
+					*/
 					universalMessengerTransmitter.sendMail(data, socket); 
 					break;
 				case UniversalMessengerTransmitter.ACTIONS.AUTHENTICATE:
