@@ -89,26 +89,41 @@ UniversalMessengerTransmitter.smtpResponseHandler = function(response, connectio
 	var number_of_response_lines = response_lines.length;
 	var last_response_code = -1;
 	var number_of_recipients = recipients.length;
+	var is_after_data_command = false;
 
 	var data = {
-		success: true,
+		success: false,
 		recipient_responses:[]
 	};
+
+	//
+	// Checks for send errors
+	//
 
 	for(var i=0; i < number_of_response_lines; i++){
 		var response_line = response_lines[i];
 		var response_code = parseInt(response_line.substr(0, 3));
 		if(!isNaN(response_code)){
-			if(response_code != 221){
+			if(response_code == 354){
+				is_after_data_command = true;
+			}
+
+			if(is_after_data_command){
 				last_response_code = parseInt(response_line.substr(0, 3));
 			}
 		}
 
 	}
 
-	if(response_code < 354){
+	if(last_response_code <= 354){
+		console.log(last_response_code);
 		data.success = true;
 	}
+
+
+	//
+	// Email Address Validation
+	//
 
 	for(var i=0; i < number_of_recipients; i++){
 		var recipient = recipients[i];
@@ -186,7 +201,6 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		rcpt_to += "RCPT TO: <" + recipient + ">\r\n";
 	}
 	*/
-	
 
 	Process("java -jar ./html-to-image-map/html-to-image-map.jar -d '" + data.base64_image_html + "' -o '" + socket.UniversalMessengerTransmitter.connection_id + "-" + new Date().getTime() + "'", function(error, output){
 		if(error){
@@ -231,8 +245,8 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 					output.html_data = output.html_data.replace(new RegExp("map\"", "g"), UniversalMessengerTransmitter.createSpecialString() + "\"", "g");
 					//map"
 					//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
-					output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "");
-					output.html_data = output.html_data.replace("</body>\n</html>", "");
+					output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "<div style=\"width: 100%; text-align: center;\">");
+					output.html_data = output.html_data.replace("</body>\n</html>", "</div>");
 					//output.html_data = new Buffer(output.html_data).toString('base64');
 					output.html_data += "\r\n.\r\nquit\r\n";
 					//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
