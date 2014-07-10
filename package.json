@@ -7,6 +7,7 @@
 		"mysql":"latest",
 		"node-uuid":"latest",
 		"jsftp":"latest",
-		"bitly":"latest"
+		"bitly":"latest",
+		"chance":"latest"
 	}
 }
