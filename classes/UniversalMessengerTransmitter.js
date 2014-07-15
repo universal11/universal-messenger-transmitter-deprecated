@@ -47,14 +47,15 @@ UniversalMessengerTransmitter.prototype.getIpAddressData = function(socket){
 	});
 }
 
-UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, smtp_relay_account_host, smtp_relay_account_name, message, connection, recipients, friendly_from, subject){
+UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, smtp_relay_account_name, message, connection, recipients, friendly_from, subject){
 	var Net = require("net");
 	var response = "";
 	var number_of_recipients = recipients.length;
+	var greeting_recieved = false;
 
 	//DATA\r\nFrom: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\n
 
-	var smtp_envelope = "EHLO " + smtp_relay_account_host + "\r\n";
+	var smtp_envelope = "";
 
 	for(var i=0; i < number_of_recipients; i++){
 		var recipient = recipients[i];
@@ -69,7 +70,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		random_subject = new Buffer(random_subject).toString("base64");
 
 
-		smtp_envelope += "MAIL FROM: <" + smtp_relay_account_name + ">\r\nRCPT TO: <" + recipient + ">\r\nDATA\r\nFrom: =?UTF-8?B?" + random_friendly_from + "?= <" + smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\nSubject: =?UTF-8?B?" + random_subject + "?=\r\n" + message + "RSET\r\n";
+		smtp_envelope += "RCPT TO: <" + recipient + ">\r\nDATA\r\nFrom: =?UTF-8?B?" + random_friendly_from + "?= <" + smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\nSubject: =?UTF-8?B?" + random_subject + "?=\r\n" + message + "RSET\r\n";
 
 	//	}
 		
@@ -82,9 +83,11 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		//console.log("Sent: " + headers + message);
 		
 		//var additional_message = "RSET\r\n" + headers + message;
-		console.log("Smtp Envelope: ");
-		console.log(smtp_envelope);
-		Client.write(smtp_envelope);
+		//console.log("Smtp Envelope: ");
+		//console.log(smtp_envelope);
+
+
+		//Client.write(smtp_envelope); //moved this 2014/7/14
 
 		//console.log("Sending Message: ");
 		//console.log(message);
@@ -102,6 +105,20 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	});
 
 	Client.on("data", function(data){
+		if(!greeting_recieved){
+			greeting_recieved = true;
+			var response_lines = data.toString().split("\r\n");
+			//console.log(response_lines);
+			var response_line = response_lines[0];
+			var response_line_parts = response_line.split(" ");
+			var response_code = parseInt(response_line_parts[0]);
+			var smtp_server_host = response_line_parts[1];
+			if(response_code == 220){
+				smtp_envelope = "EHLO " + smtp_server_host + "\r\nMAIL FROM: <" + smtp_relay_account_name + ">\r\n" + smtp_envelope;
+				Client.write(smtp_envelope);
+			}
+			
+		}
 		response += data.toString();
 	});
 
@@ -191,8 +208,8 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 
 
 
-	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + "@" + white_list_domain.name;
-	data.smtp_relay_account_host = white_list_domain.smtp_server;
+	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + "@" + data.email_provider_host;
+	//data.smtp_relay_account_host = white_list_domain.smtp_server;
 
 	/*
 	var recipients = data.recipients;
@@ -253,7 +270,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 					//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
 
 					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
-					UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_host, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
+					UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
 
 				});
 
