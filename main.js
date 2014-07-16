@@ -26,8 +26,8 @@ var Server = Net.createServer(function(socket){
 
 	var universalMessengerTransmitter = new UniversalMessengerTransmitter();
 
-	socket.write("Connected to " + socket.localAddress + ":" + socket.localPort + "\r\n");
-	socket.write("From " + socket.remoteAddress + ":" + socket.remotePort + "\r\n");
+	//socket.write("Connected to " + socket.localAddress + ":" + socket.localPort + "\r\n");
+	//socket.write("From " + socket.remoteAddress + ":" + socket.remotePort + "\r\n");
 
 	socket.on("data", function(data){
 		data = data.toString();
