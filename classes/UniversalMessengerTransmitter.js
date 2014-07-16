@@ -52,6 +52,10 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	var response = "";
 	var number_of_recipients = recipients.length;
 	var greeting_recieved = false;
+	var transmitter_response = {
+		success:false,
+		invalid_recipients:[],
+	};
 
 	//DATA\r\nFrom: =?UTF-8?B?" + data.friendly_from + "?= <" + data.smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\n
 
@@ -102,6 +106,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	Client.on("error", function(error){
 		console.log("Error from: " + recipient_host);
 		console.log(error);
+		connection.write(JSON.stringify(transmitter_response) + "\r\n");
 	});
 
 	Client.on("data", function(data){
@@ -125,12 +130,51 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	Client.on("end", function(){
 		console.log("Disconnected from " + recipient_host);
 		console.log("Response from: " + recipient_host);
-		console.log(response);
-		/*
-		connection.write(JSON.stringify({
-			response: response
-		}) + "\r\n");
-		*/
+		//console.log(response);
+
+		var response_lines = response.split("\r\n");
+		var number_of_response_lines = response_lines.length;
+
+		var checked_for_success = false;
+		var is_success = true;
+		for(var j=0; j < number_of_recipients; j++){
+			var recipient = recipients[j];
+			var is_valid = false;
+			for(var i =0; i < number_of_response_lines; i++){
+				var response_line = response_lines[i];
+
+				if(!checked_for_success){
+					var response_code = parseInt(response_line.substr(0, 3));
+					if(response_code > 354){
+						is_success = false;
+					}
+				}
+
+				if(!is_valid){
+					
+					if(response_line.indexOf(recipient) > -1){
+						is_valid = true;
+					}
+				}
+			}
+
+			if(!checked_for_success){
+				checked_for_success = true;
+			}
+
+			if(success){
+				if(!is_valid){
+					transmitter_response.invalid_recipients.push(recipient);
+				}
+			}
+			
+		}
+
+		transmitter_response.success = is_success;
+
+		//var response_line = response_lines[0];
+		
+		connection.write(JSON.stringify(transmitter_response) + "\r\n");
 		//UniversalMessengerTransmitter.smtpResponseHandler(response, connection, recipients);
 	});
 }
