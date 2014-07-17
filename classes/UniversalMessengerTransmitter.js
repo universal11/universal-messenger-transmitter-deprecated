@@ -84,7 +84,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	console.log("Port - Host - Local Address");
 	console.log(port + " - " + recipient_host + " - " + local_address);
 
-	var Client = Net.createConnection({port: port, host: recipient_host, localAddress: local_address}, function(){
+	var Client = Net.createConnection({port: port, host: recipient_host}, function(){
 		//console.log("Sending Headers: ");
 		//console.log(headers);
 		//console.log("Sent: " + headers + message);
