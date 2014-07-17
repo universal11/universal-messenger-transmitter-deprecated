@@ -270,6 +270,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 			throw error;
 			return 0;
 		}
+		console.log("Html To Image Response: " + output);
 		output = JSON.parse(output);
 		//.replace("src=\"./processed", data.image_host + "/images/")
 		data.offer_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/warpdrive.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
