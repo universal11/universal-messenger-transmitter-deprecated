@@ -129,7 +129,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 	Client.on("end", function(){
 		console.log("Disconnected from " + recipient_host);
-		console.log("Response from: " + recipient_host);
+		//console.log("Response from: " + recipient_host);
 		//console.log(response);
 
 		var response_lines = response.split("\r\n");
@@ -252,7 +252,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 
 
 
-	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + "@" + data.email_provider_host;
+	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + chance.integer({min: 11111111111111111111, max: 99999999999999999999}) +  "@" + data.email_provider_host;
 	//data.smtp_relay_account_host = white_list_domain.smtp_server;
 
 	/*
