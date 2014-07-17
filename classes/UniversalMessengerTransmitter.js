@@ -446,9 +446,10 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp
 	  pass: "batman11!" // defaults to "@anonymous"
 
 	 */
+	var path = require('path'),
+    app_directory = path.dirname(require.main.filename);
 
-
-	FTP.put(__dirname + "/processed/" + filename, '/generated/' + filename, function(error) {
+	FTP.put(app_directory + "/processed/" + filename, '/generated/' + filename, function(error) {
 		if(error){
 	  		console.log(error);
 	  		throw error;
