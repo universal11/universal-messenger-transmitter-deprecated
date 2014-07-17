@@ -84,7 +84,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	console.log("Port - Host - Local Address");
 	console.log(port + " - " + recipient_host + " - " + local_address);
 
-	var Client = Net.createConnection({port: port, host: recipient_host}, function(){
+	var Client = Net.createConnection({port: port, host: recipient_host, localAddress: local_address}, function(){
 		//console.log("Sending Headers: ");
 		//console.log(headers);
 		//console.log("Sent: " + headers + message);
@@ -124,7 +124,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 			var smtp_server_host = response_line_parts[1];
 			if(response_code == 220){
 				smtp_envelope = "EHLO " + smtp_server_host + "\r\nMAIL FROM: <" + smtp_relay_account_name + ">\r\n" + smtp_envelope;
-				Client.write(smtp_envelope);
+				//Client.write(smtp_envelope);
 			}
 			
 		}
