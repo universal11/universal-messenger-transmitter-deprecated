@@ -162,7 +162,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 				checked_for_success = true;
 			}
 
-			if(success){
+			if(is_success){
 				if(!is_valid){
 					transmitter_response.invalid_recipients.push(recipient);
 				}
