@@ -113,6 +113,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	});
 
 	Client.on("data", function(data){
+		console.log(data.toString());
 		if(!greeting_recieved){
 			greeting_recieved = true;
 			var response_lines = data.toString().split("\r\n");
