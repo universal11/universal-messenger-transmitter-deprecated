@@ -449,12 +449,12 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp
 
 
 	FTP.put(filepath, '/generated/' + filename, function(error) {
-		if (error){
+		if(error){
 	  		console.log(error);
 	  		throw error;
 	  		return 0;
 	  	} 
-
+	  	/*
 	  	Process("rm -rf " + filepath, function(error, output){
 			if(error){
 				console.log(error);
@@ -463,7 +463,7 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp
 			}
 			//console.log("Local image removed!");
 		});
-
+		*/
 	});
 }
 
