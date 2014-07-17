@@ -427,6 +427,7 @@ UniversalMessengerTransmitter.createSpecialString = function(){
 }
 
 UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp_host, ftp_user, ftp_pass, ftp_port){
+	console.log("Moving: " + filename + " - at - " + filepath);
 	var JSFTP = require("jsftp");
 	var Process = require("child_process").exec;
 	var FTP = new JSFTP({
