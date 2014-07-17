@@ -272,7 +272,9 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		}
 		output = JSON.parse(output);
 		//.replace("src=\"./processed", data.image_host + "/images/")
-		var image_url = "http://" + data.image_host + "/images/" + output.file_name;
+		data.offer_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/warpdrive.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
+		data.unsubscribe_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/disengage.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
+		var image_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/asset.php?p=" + output.file_name.replace(".png", "") + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
 
 		//perform bity'ing of url's
 		//string replace below
@@ -313,7 +315,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 					output.html_data += "\r\n.\r\n";
 					//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
 
-					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name);
+					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name, data.image_host, data.ftp_user, data.ftp_pass, data.ftp_port);
 					UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
 
 				});
@@ -424,15 +426,24 @@ UniversalMessengerTransmitter.createSpecialString = function(){
 	return UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50) + UniversalMessengerTransmitter.createSpecialCharacterString(1) + UniversalMessengerTransmitter.createRandomString(50);
 }
 
-UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename){
+UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp_host, ftp_user, ftp_pass, ftp_port){
 	var JSFTP = require("jsftp");
 	var Process = require("child_process").exec;
 	var FTP = new JSFTP({
-	  host: "theuniversalframework.com",
+	  host: ftp_host,
+	  port: ftp_port, // defaults to 21
+	  user: ftp_user, // defaults to "anonymous"
+	  pass: ftp_pass // defaults to "@anonymous"
+	});
+
+
+	/*
+	host: "enterwebdeals.com",
 	  port: 21, // defaults to 21
 	  user: "creativeimages", // defaults to "anonymous"
 	  pass: "batman11!" // defaults to "@anonymous"
-	});
+
+	 */
 
 
 	FTP.put(filepath, '/generated/' + filename, function(error) {
