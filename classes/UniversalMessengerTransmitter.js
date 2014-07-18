@@ -276,57 +276,66 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 		data.offer_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/warpdrive.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
 		data.unsubscribe_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/disengage.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
 		var image_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/asset.php?p=" + output.file_name.replace(".png", "") + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
-
+		var oo_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/oo.php?" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
 		//perform bity'ing of url's
 		//string replace below
 
-		bitly.shorten(image_url, function(error, response) {
+		bitly.shorten(oo_url, function(error, response) {
 			if (error) {
 				console.log(error);
 				throw error;
 			}
-			image_url = response.data.url
 
-			bitly.shorten(data.offer_url, function(error, response) {
+			oo_url = response.data.url;
+
+			bitly.shorten(image_url, function(error, response) {
 				if (error) {
 					console.log(error);
 					throw error;
 				}
+				image_url = response.data.url;
 
-				data.offer_url = response.data.url;
-
-				bitly.shorten(data.unsubscribe_url, function(error, response) {
+				bitly.shorten(data.offer_url, function(error, response) {
 					if (error) {
 						console.log(error);
 						throw error;
 					}
-					
-					data.unsubscribe_url = response.data.url;
 
-					output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-					output.html_data = output.html_data.replace("src=\"./processed/" + output.file_name, "src=\"" + image_url);
-					output.html_data = output.html_data.replace("[#offer_url#]", data.offer_url);
-					output.html_data = output.html_data.replace("[#unsubscribe_url#]", data.unsubscribe_url);
-					output.html_data = output.html_data.replace(new RegExp("map\"", "g"), UniversalMessengerTransmitter.createSpecialString() + "\"", "g");
-					//map"
-					//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
-					output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "<div style=\"width: 100%; text-align: center;\">");
-					output.html_data = output.html_data.replace("</body>\n</html>", "</div>");
-					//output.html_data = new Buffer(output.html_data).toString('base64');
-					output.html_data += "\r\n.\r\n";
-					//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
+					data.offer_url = response.data.url;
 
-					UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name, data.image_host, data.ftp_user, data.ftp_pass, data.ftp_port);
-					UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
+					bitly.shorten(data.unsubscribe_url, function(error, response) {
+						if (error) {
+							console.log(error);
+							throw error;
+						}
+						
+						data.unsubscribe_url = response.data.url;
+
+						output.html_data = new Buffer(output.html_data, 'base64').toString('ascii'); //<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+						output.html_data = output.html_data.replace("src=\"./processed/" + output.file_name, "src=\"" + image_url);
+						output.html_data = output.html_data.replace("[#oo_url#]", oo_url);
+						output.html_data = output.html_data.replace("[#offer_url#]", data.offer_url);
+						output.html_data = output.html_data.replace("[#unsubscribe_url#]", data.unsubscribe_url);
+						output.html_data = output.html_data.replace(new RegExp("map\"", "g"), UniversalMessengerTransmitter.createSpecialString() + "\"", "g");
+						//map"
+						//output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">", "");
+						output.html_data = output.html_data.replace("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html>\n<head></head>\n<body style=\"margin: 0; padding: 0; text-align: center;\">\n", "<div style=\"width: 100%; text-align: center;\">");
+						output.html_data = output.html_data.replace("</body>\n</html>", "</div>");
+						//output.html_data = new Buffer(output.html_data).toString('base64');
+						output.html_data += "\r\n.\r\n";
+						//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
+
+						UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name, data.image_host, data.ftp_user, data.ftp_pass, data.ftp_port);
+						UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
+
+					});
 
 				});
 
+				
 			});
 
-			
 		});
-
-		
 		
 	});
 
