@@ -129,8 +129,8 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 	Client.on("end", function(){
 		console.log("Disconnected from " + recipient_host);
-		//console.log("Response from: " + recipient_host);
-		//console.log(response);
+		console.log("Response from: " + recipient_host);
+		console.log(response);
 
 		var response_lines = response.split("\r\n");
 		var number_of_response_lines = response_lines.length;
@@ -270,7 +270,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 			throw error;
 			return 0;
 		}
-		console.log("Html To Image Response: " + output);
+		//console.log("Html To Image Response: " + output);
 		output = JSON.parse(output);
 		//.replace("src=\"./processed", data.image_host + "/images/")
 		data.offer_url = "http://" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "." + data.image_host + "/warpdrive.php?c=" + data.campaign_id + "&" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"}) + "=" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"});
@@ -428,7 +428,7 @@ UniversalMessengerTransmitter.createSpecialString = function(){
 }
 
 UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp_host, ftp_user, ftp_pass, ftp_port){
-	console.log("Moving: " + filename + " - at - " + filepath);
+	//console.log("Moving: " + filename + " - at - " + filepath);
 	var JSFTP = require("jsftp");
 	var Process = require("child_process").exec;
 	var FTP = new JSFTP({
