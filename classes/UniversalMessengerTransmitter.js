@@ -458,7 +458,8 @@ UniversalMessengerTransmitter.moveToImageHost = function(filepath, filename, ftp
 	var path = require('path'),
     app_directory = path.dirname(require.main.filename);
 
-	FTP.put(app_directory + "/processed/" + filename, '/generated/' + filename, function(error) {
+
+	FTP.put(app_directory + "/processed/" + filename, '/generated/' + filename.replace(".png", ""), function(error) {
 		if(error){
 	  		console.log(error);
 	  		throw error;
