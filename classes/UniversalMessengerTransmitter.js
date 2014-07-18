@@ -74,7 +74,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		random_subject = new Buffer(random_subject).toString("base64");
 
 
-		smtp_envelope += "RCPT TO: <" + recipient + ">\r\nDATA\r\nFrom: =?UTF-8?B?" + random_friendly_from + "?= <" + smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\nSubject: =?UTF-8?B?" + random_subject + "?=\r\n" + message + "RSET\r\n";
+		smtp_envelope += "MAIL FROM: <" + smtp_relay_account_name + ">\r\nRCPT TO: <" + recipient + ">\r\nDATA\r\nFrom: =?UTF-8?B?" + random_friendly_from + "?= <" + smtp_relay_account_name + ">\r\nTo: \"" + recipient.split("@")[0] + "\" <" + recipient + ">\r\nSubject: =?UTF-8?B?" + random_subject + "?=\r\n" + message + "RSET\r\n";
 
 	//	}
 		
@@ -119,7 +119,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 			var response_code = parseInt(response_line_parts[0]);
 			var smtp_server_host = response_line_parts[1];
 			if(response_code == 220){
-				smtp_envelope = "EHLO " + smtp_server_host + "\r\nMAIL FROM: <" + smtp_relay_account_name + ">\r\n" + smtp_envelope;
+				smtp_envelope = "EHLO " + smtp_server_host + "\r\n" + smtp_envelope;
 				Client.write(smtp_envelope);
 			}
 			
