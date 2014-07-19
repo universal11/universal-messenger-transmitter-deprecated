@@ -53,7 +53,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	var number_of_recipients = recipients.length;
 	var greeting_recieved = false;
 	var transmitter_response = {
-		success:false,
+		success:true,
 		invalid_recipients:[],
 	};
 
@@ -109,6 +109,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	Client.on("error", function(error){
 		console.log("Error from: " + recipient_host);
 		console.log(error);
+		transmitter_response.success = false;
 		connection.write(JSON.stringify(transmitter_response) + "\r\n");
 	});
 
@@ -139,8 +140,6 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		var response_lines = response.split("\r\n");
 		var number_of_response_lines = response_lines.length;
 
-		var checked_for_success = false;
-		var is_success = true;
 		for(var j=0; j < number_of_recipients; j++){
 			var recipient = recipients[j];
 			var is_valid = false;
@@ -148,31 +147,20 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 				var response_line = response_lines[i];
 				var response_code = parseInt(response_line.substr(0, 3));
 
-				if(!checked_for_success){
-					
-					if(response_code > 354){
-						is_success = false;
-					}
-				}
-
 				if(!is_valid){
 					
 					if(response_line.indexOf(recipient) > -1 && response_code < 354){
 						is_valid = true;
 					}
 				}
+
+
 			}
 
-			if(!checked_for_success){
-				checked_for_success = true;
+			if(!is_valid){
+				transmitter_response.invalid_recipients.push(recipient);
 			}
 
-			if(is_success){
-				if(!is_valid){
-					transmitter_response.invalid_recipients.push(recipient);
-				}
-			}
-			
 		}
 
 		transmitter_response.success = is_success;
