@@ -47,7 +47,7 @@ UniversalMessengerTransmitter.prototype.getIpAddressData = function(socket){
 	});
 }
 
-UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, smtp_relay_account_name, message, connection, recipients, friendly_from, subject, smtp_server_host){
+UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host, local_address, smtp_relay_account_name, message, connection, recipients, friendly_from, subject){
 	var Net = require("net");
 	var response = "";
 	var number_of_recipients = recipients.length;
@@ -100,9 +100,6 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		//console.log("Sending Envelope: ");
 		//console.log(data.envelope);
 		//Client.write(data.envelope);
-
-		smtp_envelope = "EHLO " + smtp_server_host + "\r\n" + smtp_envelope;
-		Client.write(smtp_envelope);
 		
 	});
 
@@ -113,7 +110,6 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 	});
 
 	Client.on("data", function(data){
-		/*
 		if(!greeting_recieved){
 			greeting_recieved = true;
 			var response_lines = data.toString().split("\r\n");
@@ -123,11 +119,11 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 			var response_code = parseInt(response_line_parts[0]);
 			var smtp_server_host = response_line_parts[1];
 			if(response_code == 220){
-				
+				smtp_envelope = "EHLO " + smtp_server_host + "\r\n" + smtp_envelope;
+				Client.write(smtp_envelope);
 			}
 			
 		}
-		*/
 		response += data.toString();
 	});
 
@@ -256,7 +252,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 
 
 
-	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + chance.integer({min: 11111111111111111111, max: 99999999999999999999}) +  "@" + white_list_domain.name;
+	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + chance.integer({min: 11111111111111111111, max: 99999999999999999999}) +  "@" + data.email_provider_host;
 	//data.smtp_relay_account_host = white_list_domain.smtp_server;
 
 	/*
@@ -330,7 +326,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 						//output.html_data = UniversalMessengerTransmitter.createRandomStyleTag() + output.html_data;
 
 						UniversalMessengerTransmitter.moveToImageHost(output.image_path, output.file_name, data.image_host, data.ftp_user, data.ftp_pass, data.ftp_port);
-						UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject, white_list_domain.smtp_server);
+						UniversalMessengerTransmitter.createSmtpSession(25, data.recipient_host, data.local_address, data.smtp_relay_account_name, "MIME-version: 1.0\r\nContent-type: text/html\r\n\r\n" + output.html_data, socket, data.recipients, data.friendly_from, data.subject);
 
 					});
 
