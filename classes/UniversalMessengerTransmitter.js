@@ -146,9 +146,10 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 			var is_valid = false;
 			for(var i =0; i < number_of_response_lines; i++){
 				var response_line = response_lines[i];
+				var response_code = parseInt(response_line.substr(0, 3));
 
 				if(!checked_for_success){
-					var response_code = parseInt(response_line.substr(0, 3));
+					
 					if(response_code > 354){
 						is_success = false;
 					}
@@ -156,7 +157,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 
 				if(!is_valid){
 					
-					if(response_line.indexOf(recipient) > -1){
+					if(response_line.indexOf(recipient) > -1 && response_code < 354){
 						is_valid = true;
 					}
 				}
