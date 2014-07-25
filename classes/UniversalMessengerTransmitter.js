@@ -224,14 +224,18 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 	var Bitly = require('bitly');
 	var bitly = new Bitly(data.bitly_account_name, data.bitly_account_api_key);
 	var rcpt_to = "";
-	var white_list_domain = UniversalMessengerTransmitter.getRandomWhiteListedDomain();
+	var white_list_domain = {
+		smtp_server: "mta" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", length: 7}) + ".mail." + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", length: 5}) + ".yahoo.com",
+		name: "yahoo.com" 
+	};
+	//UniversalMessengerTransmitter.getRandomWhiteListedDomain();
 	var Chance = require('chance');
 	var chance = new Chance();
 
 	if(data.local_address === undefined){
 		data.local_address = "0.0.0.0";
 	}
-
+	//mta1376.mail.ne1.yahoo.com
 
 	/*
 	var random_friendly_from_tag_spacer = UniversalMessengerTransmitter.createRandomPunctuationString(1);
@@ -244,7 +248,7 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 
 
 
-	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + chance.integer({min: 11111111111111111111, max: 99999999999999999999}) +  "@" + white_list_domain.name;
+	data.smtp_relay_account_name = chance.name().replace(/\s/g, '').toLowerCase() + chance.string({pool: "abcdefghijklmnopqrstuvwxyz", length: 10}) +  "@" + white_list_domain.name;
 	//data.smtp_relay_account_host = white_list_domain.smtp_server;
 
 	/*
