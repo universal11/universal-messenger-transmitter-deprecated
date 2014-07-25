@@ -360,7 +360,7 @@ UniversalMessengerTransmitter.createRandomString = function(length){
 
 UniversalMessengerTransmitter.getRandomSpacerCharacters = function(length){
 	var random_string = "";
-    var possible = "_ .";
+    var possible = "_ .@";
      for( var i=0; i < length; i++){
     	random_string += possible.charAt(Math.floor(Math.random() * possible.length));
     }
