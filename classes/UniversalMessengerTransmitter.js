@@ -399,7 +399,9 @@ UniversalMessengerTransmitter.getRandomWhiteListedDomain = function(){
 		{
 			name:"yahoo.com",
 			smtp_server:"smtp.mail.yahoo.com"
-		},
+		}
+		/*
+		,
 		{
 			name:"mail.com",
 			smtp_server:"smtp.mail.com"
@@ -412,7 +414,7 @@ UniversalMessengerTransmitter.getRandomWhiteListedDomain = function(){
 			name:"aol.com",
 			smtp_server:"smtp.aol.com"
 		}
-		/*
+		/
 		,
 		{
 			name:"hotmail.com",
