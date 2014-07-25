@@ -45,6 +45,7 @@ var Server = Net.createServer(function(socket){
 			switch(data.action){
 				case UniversalMessengerTransmitter.ACTIONS.QUIT:
 					socket.end(); 
+					return 0;
 					break;
 				case UniversalMessengerTransmitter.ACTIONS.SEND_MAIL:
 					/*

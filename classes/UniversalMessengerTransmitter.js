@@ -166,6 +166,7 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		//var response_line = response_lines[0];
 		
 		connection.write(JSON.stringify(transmitter_response) + "\r\n");
+		connection.end();
 		//UniversalMessengerTransmitter.smtpResponseHandler(response, connection, recipients);
 	});
 }
