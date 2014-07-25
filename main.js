@@ -35,7 +35,7 @@ var Server = Net.createServer(function(socket){
 			data = data.toString();
 			request_data += data;
 			if(request_data.indexOf("\u2404") > -1){
-
+					request_data = request_data.replace("\u2404", "");
 					var dataAsJsonString = request_data;
 					try{
 						data = JSON.parse(request_data);
