@@ -65,12 +65,14 @@ UniversalMessengerTransmitter.createSmtpSession = function(port, recipient_host,
 		var recipient = recipients[i];
 
 		//for(var j=0; j < 50000; j++){
-		var random_friendly_from_tag_spacer = UniversalMessengerTransmitter.createRandomPunctuationString(1);
-		var random_friendly_from  = random_friendly_from_tag_spacer + friendly_from + random_friendly_from_tag_spacer;
-		random_friendly_from = UniversalMessengerTransmitter.randomizeSpaces(random_friendly_from);
+		//var random_friendly_from_tag_spacer = UniversalMessengerTransmitter.createRandomPunctuationString(1);
+		//var random_friendly_from  = random_friendly_from_tag_spacer + friendly_from + random_friendly_from_tag_spacer;
+		//random_friendly_from = UniversalMessengerTransmitter.randomizeSpaces(random_friendly_from);
+		var random_friendly_from = friendly_from;
 		random_friendly_from = new Buffer(random_friendly_from).toString("base64");
 
-		var random_subject = UniversalMessengerTransmitter.randomizeSpaces(subject);
+		//var random_subject = UniversalMessengerTransmitter.randomizeSpaces(subject);
+		var random_subject = subject;
 		random_subject = new Buffer(random_subject).toString("base64");
 
 
