@@ -224,13 +224,14 @@ UniversalMessengerTransmitter.prototype.sendMail = function(data, socket){
 	var Bitly = require('bitly');
 	var bitly = new Bitly(data.bitly_account_name, data.bitly_account_api_key);
 	var rcpt_to = "";
+	//UniversalMessengerTransmitter.getRandomWhiteListedDomain();
+	var Chance = require('chance');
+	var chance = new Chance();
+
 	var white_list_domain = {
 		smtp_server: "mta" + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", length: 7}) + ".mail." + chance.string({pool: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", length: 5}) + ".yahoo.com",
 		name: "yahoo.com" 
 	};
-	//UniversalMessengerTransmitter.getRandomWhiteListedDomain();
-	var Chance = require('chance');
-	var chance = new Chance();
 
 	if(data.local_address === undefined){
 		data.local_address = "0.0.0.0";
